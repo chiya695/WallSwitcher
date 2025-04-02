@@ -1,5 +1,6 @@
 package com.chiya.wallswitcher.ui.screen
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +19,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -32,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.chiya.wallswitcher.R
 import com.chiya.wallswitcher.data.model.Settings
@@ -182,8 +186,9 @@ fun SettingsScreen(viewModel: MainViewModel) {
             SettingItem(
                 title = stringResource(id = R.string.settings_crop_method),
                 description = when (settings.cropMethod) {
-                    0 -> stringResource(id = R.string.settings_crop_method_center)
-                    1 -> stringResource(id = R.string.settings_crop_method_top)
+                    0 -> stringResource(id = R.string.settings_crop_method_none)
+                    1 -> stringResource(id = R.string.settings_crop_method_center)
+                    2 -> stringResource(id = R.string.settings_crop_method_top)
                     else -> stringResource(id = R.string.settings_crop_method_bottom)
                 }
             ) {
@@ -529,8 +534,9 @@ fun CropMethodSelector(
     ) {
         OutlinedTextField(
             value = when (selectedMethod) {
-                0 -> stringResource(id = R.string.settings_crop_method_center)
-                1 -> stringResource(id = R.string.settings_crop_method_top)
+                0 -> stringResource(id = R.string.settings_crop_method_none)
+                1 -> stringResource(id = R.string.settings_crop_method_center)
+                2 -> stringResource(id = R.string.settings_crop_method_top)
                 else -> stringResource(id = R.string.settings_crop_method_bottom)
             },
             onValueChange = {},
@@ -544,7 +550,7 @@ fun CropMethodSelector(
             onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(
-                text = { Text(stringResource(id = R.string.settings_crop_method_center)) },
+                text = { Text(stringResource(id = R.string.settings_crop_method_none)) },
                 onClick = {
                     onMethodSelected(0)
                     expanded = false
@@ -552,7 +558,7 @@ fun CropMethodSelector(
             )
             
             DropdownMenuItem(
-                text = { Text(stringResource(id = R.string.settings_crop_method_top)) },
+                text = { Text(stringResource(id = R.string.settings_crop_method_center)) },
                 onClick = {
                     onMethodSelected(1)
                     expanded = false
@@ -560,9 +566,17 @@ fun CropMethodSelector(
             )
             
             DropdownMenuItem(
-                text = { Text(stringResource(id = R.string.settings_crop_method_bottom)) },
+                text = { Text(stringResource(id = R.string.settings_crop_method_top)) },
                 onClick = {
                     onMethodSelected(2)
+                    expanded = false
+                }
+            )
+            
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.settings_crop_method_bottom)) },
+                onClick = {
+                    onMethodSelected(3)
                     expanded = false
                 }
             )

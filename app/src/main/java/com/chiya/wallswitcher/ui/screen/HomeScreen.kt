@@ -63,12 +63,14 @@ fun HomeScreen(viewModel: MainViewModel) {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
     )
-    
+
     LaunchedEffect(Unit) {
-        LogUtils.log("HomeScreen: 检查权限")
+        // LogUtils.log("HomeScreen: 检查权限")
         if (!permissionState.status.isGranted) {
             LogUtils.log("HomeScreen: 请求权限")
             permissionState.launchPermissionRequest()
+        } else {
+            LogUtils.log("HomeScreen: 权限检查已通过")
         }
     }
     

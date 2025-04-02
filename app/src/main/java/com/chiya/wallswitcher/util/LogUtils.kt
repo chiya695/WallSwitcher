@@ -2,6 +2,7 @@ package com.chiya.wallswitcher.util
 
 import android.os.Environment
 import android.util.Log
+import com.chiya.wallswitcher.WallSwitcherApp
 import java.io.File
 import java.io.FileWriter
 import java.text.SimpleDateFormat
@@ -84,13 +85,18 @@ object LogUtils {
      * 获取日志文件
      */
     private fun getLogFile(): File {
-        // 尝试使用外部存储
-        val externalDir = Environment.getExternalStorageDirectory()
-        return if (externalDir != null && externalDir.canWrite()) {
-            File(externalDir, LOG_FILE_NAME)
-        } else {
-            // 回退到应用私有存储
-            File(Environment.getDataDirectory(), LOG_FILE_NAME)
+        // 使用应用的私有外部文件目录，不需要特殊权限
+        val context = WallSwitcherApp.instance.applicationContext
+        val logDir = File(context.getExternalFilesDir(null), "logs")
+        if (!logDir.exists()) {
+            logDir.mkdirs()
         }
+        
+        // 使用日期作为文件名，方便区分
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val today = dateFormat.format(Date())
+        
+        // 明确指定File构造函数参数类型，避免歧义
+        return File(logDir.absolutePath, "wallswitcher_$today.log")
     }
 } 

@@ -1,5 +1,6 @@
 package com.chiya.wallswitcher.ui.screen
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,12 +27,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.chiya.wallswitcher.R
 import com.chiya.wallswitcher.data.model.Wallpaper
 import com.chiya.wallswitcher.ui.viewmodel.MainViewModel
+import com.chiya.wallswitcher.util.LogUtils
 import java.io.File
+import androidx.compose.ui.draw.clip
 
 /**
  * 图库界面
@@ -107,6 +111,22 @@ fun GalleryScreen(viewModel: MainViewModel) {
 fun WallpaperItem(wallpaper: Wallpaper, onClick: () -> Unit) {
     val context = LocalContext.current
     
+    // 添加日志以便调试
+    LogUtils.log("加载图片: ${wallpaper.path}")
+
+    // 根据路径类型构建不同的请求
+    val imageRequest = if (wallpaper.path.startsWith("content://")) {
+        ImageRequest.Builder(LocalContext.current)
+            .data(Uri.parse(wallpaper.path))
+            .crossfade(true)
+            .build()
+    } else {
+        ImageRequest.Builder(LocalContext.current)
+            .data(wallpaper.path)
+            .crossfade(true)
+            .build()
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -115,25 +135,13 @@ fun WallpaperItem(wallpaper: Wallpaper, onClick: () -> Unit) {
     ) {
         Box {
             // 图片
-            SubcomposeAsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(File(wallpaper.path))
-                    .crossfade(true)
-                    .build(),
+            AsyncImage(
+                model = imageRequest,
                 contentDescription = wallpaper.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-                loading = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.padding(8.dp),
-                            strokeWidth = 2.dp
-                        )
-                    }
-                }
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(MaterialTheme.shapes.medium)
             )
         }
     }

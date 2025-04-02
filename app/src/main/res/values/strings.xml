@@ -63,6 +63,7 @@
     <string name="settings_crop_method_center">居中裁剪</string>
     <string name="settings_crop_method_top">顶部裁剪</string>
     <string name="settings_crop_method_bottom">底部裁剪</string>
+    <string name="settings_crop_method_none">不裁剪</string>
     <string name="settings_advanced_section">高级设置</string>
     <string name="settings_enable_logging">启用日志记录</string>
     <string name="settings_enable_logging_desc">记录应用操作日志（存储在：/Android/data/com.chiya.wallswitcher/files/logs/）</string>

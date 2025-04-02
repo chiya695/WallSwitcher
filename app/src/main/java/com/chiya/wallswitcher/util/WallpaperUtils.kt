@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
@@ -36,6 +38,19 @@ object WallpaperUtils {
             
             // 显示通知
             if (settings.showToast) {
+                // 显示Toast消息
+                val message = if (success) {
+                    context.getString(R.string.toast_wallpaper_changed)
+                } else {
+                    context.getString(R.string.home_toast_wallpaper_failed)
+                }
+                
+                // 在主线程显示Toast
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+                
+                // 显示通知
                 showWallpaperChangeNotification(context, success, wallpaper.name)
             }
             
@@ -46,6 +61,12 @@ object WallpaperUtils {
             
             // 显示失败通知
             if (settings.showToast) {
+                // 在主线程显示Toast
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(context, context.getString(R.string.home_toast_wallpaper_failed), Toast.LENGTH_SHORT).show()
+                }
+                
+                // 显示通知
                 showWallpaperChangeNotification(context, false, wallpaper.name)
             }
             
@@ -82,10 +103,20 @@ object WallpaperUtils {
                 }
                 
                 // 裁剪图片
-                val cropMethod = when (settings.cropMethod) {
-                    CropMethod.TOP.ordinal -> CropMethod.TOP
-                    CropMethod.BOTTOM.ordinal -> CropMethod.BOTTOM
-                    else -> CropMethod.CENTER
+                val cropMethodOrdinal = settings.cropMethod
+                val cropMethod = when (cropMethodOrdinal) {
+                    1 -> CropMethod.CENTER
+                    2 -> CropMethod.TOP
+                    3 -> CropMethod.BOTTOM
+                    else -> null  // 使用null代替CropMethod.NONE
+                }
+                
+                if (cropMethodOrdinal == 0) {
+                    // 使用原始位图设置壁纸
+                    val result = setWallpaperWithBitmap(context, originalBitmap, wallpaper.name, settings)
+                    // 回收位图
+                    originalBitmap.recycle()
+                    return result
                 }
                 
                 cropBitmap(originalBitmap, screenSize, cropMethod)
@@ -109,10 +140,20 @@ object WallpaperUtils {
                 }
                 
                 // 裁剪图片
-                val cropMethod = when (settings.cropMethod) {
-                    CropMethod.TOP.ordinal -> CropMethod.TOP
-                    CropMethod.BOTTOM.ordinal -> CropMethod.BOTTOM
-                    else -> CropMethod.CENTER
+                val cropMethodOrdinal = settings.cropMethod
+                val cropMethod = when (cropMethodOrdinal) {
+                    1 -> CropMethod.CENTER
+                    2 -> CropMethod.TOP
+                    3 -> CropMethod.BOTTOM
+                    else -> null  // 使用null代替CropMethod.NONE
+                }
+                
+                if (cropMethodOrdinal == 0) {
+                    // 使用原始位图设置壁纸
+                    val result = setWallpaperWithBitmap(context, originalBitmap, wallpaper.name, settings)
+                    // 回收位图
+                    originalBitmap.recycle()
+                    return result
                 }
                 
                 cropBitmap(originalBitmap, screenSize, cropMethod)
@@ -180,10 +221,17 @@ object WallpaperUtils {
             val originalBitmap = BitmapFactory.decodeFile(path, loadOptions) ?: return null
             
             // 裁剪图片
-            val cropMethod = when (cropMethodValue) {
-                CropMethod.TOP.ordinal -> CropMethod.TOP
-                CropMethod.BOTTOM.ordinal -> CropMethod.BOTTOM
-                else -> CropMethod.CENTER
+            val cropMethodOrdinal = cropMethodValue
+            val cropMethod = when (cropMethodOrdinal) {
+                2 -> CropMethod.TOP
+                3 -> CropMethod.BOTTOM
+                1 -> CropMethod.CENTER
+                else -> null  // 使用null代替CropMethod.NONE
+            }
+            
+            // 如果不需要裁剪，直接返回原图
+            if (cropMethod == null) {
+                return originalBitmap
             }
             
             return cropBitmap(originalBitmap, screenSize, cropMethod)
@@ -217,7 +265,12 @@ object WallpaperUtils {
     /**
      * 裁剪位图
      */
-    private fun cropBitmap(bitmap: Bitmap, screenSize: Point, cropMethod: CropMethod): Bitmap {
+    private fun cropBitmap(bitmap: Bitmap, screenSize: Point, cropMethod: CropMethod?): Bitmap {
+        // 如果cropMethod为null，直接返回原图的缩放版本
+        if (cropMethod == null) {
+            return Bitmap.createScaledBitmap(bitmap, screenSize.x, screenSize.y, true)
+        }
+        
         val screenWidth = screenSize.x
         val screenHeight = screenSize.y
         val bitmapWidth = bitmap.width
@@ -245,6 +298,7 @@ object WallpaperUtils {
                 CropMethod.TOP -> 0
                 CropMethod.BOTTOM -> bitmapHeight - scaledHeight
                 CropMethod.CENTER -> (bitmapHeight - scaledHeight) / 2
+                else -> (bitmapHeight - scaledHeight) / 2  // 默认居中
             }
             
             // 裁剪
@@ -256,6 +310,7 @@ object WallpaperUtils {
             x = when (cropMethod) {
                 CropMethod.TOP, CropMethod.BOTTOM -> (bitmapWidth - scaledWidth) / 2
                 CropMethod.CENTER -> (bitmapWidth - scaledWidth) / 2
+                else -> (bitmapWidth - scaledWidth) / 2  // 默认居中
             }
             
             // 裁剪
@@ -291,9 +346,16 @@ object WallpaperUtils {
             // 创建通知
             val notificationBuilder = NotificationCompat.Builder(context, "wallpaper_change")
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(if (success) "壁纸切换成功" else "壁纸切换失败")
-                .setContentText(if (success) "已设置壁纸: $wallpaperName" else "无法设置壁纸: $wallpaperName")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentTitle(context.getString(
+                    if (success) R.string.notification_title_wallpaper_success 
+                    else R.string.notification_title_wallpaper_failed
+                ))
+                .setContentText(context.getString(
+                    if (success) R.string.notification_content_wallpaper_success 
+                    else R.string.notification_content_wallpaper_failed,
+                    wallpaperName
+                ))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)  // 提高优先级
                 .setAutoCancel(true)
             
             // 显示通知
@@ -304,6 +366,33 @@ object WallpaperUtils {
         } catch (e: Exception) {
             LogUtils.log("显示通知时出错: ${e.message}")
             e.printStackTrace()
+        }
+    }
+
+    /**
+     * 使用位图设置壁纸
+     */
+    private fun setWallpaperWithBitmap(context: Context, bitmap: Bitmap, wallpaperName: String, settings: Settings): Boolean {
+        try {
+            // 获取壁纸管理器
+            val wallpaperManager = WallpaperManager.getInstance(context)
+            
+            // 设置壁纸
+            if (settings.setLockScreen && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // 同时设置主屏幕和锁屏壁纸
+                wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
+                LogUtils.log("已设置主屏幕和锁屏壁纸: $wallpaperName")
+            } else {
+                // 仅设置主屏幕壁纸
+                wallpaperManager.setBitmap(bitmap)
+                LogUtils.log("已设置主屏幕壁纸: $wallpaperName")
+            }
+            
+            return true
+        } catch (e: Exception) {
+            LogUtils.log("设置壁纸时出错: ${e.message}")
+            e.printStackTrace()
+            return false
         }
     }
 } 
