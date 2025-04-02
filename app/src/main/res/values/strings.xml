@@ -1,0 +1,91 @@
+<resources>
+    <string name="app_name">壁纸切换器</string>
+    
+    <!-- 底部导航栏 -->
+    <string name="tab_home">主页</string>
+    <string name="tab_gallery">图库</string>
+    <string name="tab_settings">设置</string>
+    
+    <!-- 主页 -->
+    <string name="home_title">壁纸切换器</string>
+    <string name="home_subtitle">自动切换您的壁纸</string>
+    <string name="home_folder_title">壁纸文件夹</string>
+    <string name="home_folder_empty">未设置壁纸文件夹</string>
+    <string name="home_folder_selected">当前文件夹: %s</string>
+    <string name="home_select_folder">选择文件夹</string>
+    <string name="home_wallpaper_count">共 %d 张壁纸</string>
+    <string name="home_wallpaper_empty">没有壁纸</string>
+    <string name="home_switch_now">立即切换壁纸</string>
+    <string name="home_service_status">服务状态: %s</string>
+    <string name="home_service_running">运行中</string>
+    <string name="home_service_stopped">已停止</string>
+    <string name="home_start_service">启动服务</string>
+    <string name="home_stop_service">停止服务</string>
+    <string name="home_permission_required">需要存储权限</string>
+    <string name="home_permission_rationale">需要存储权限来访问壁纸文件</string>
+    <string name="home_permission_denied">无法访问壁纸文件，请在设置中授予权限</string>
+    <string name="home_toast_wallpaper_set">壁纸已设置</string>
+    <string name="home_toast_wallpaper_failed">设置壁纸失败</string>
+    <string name="home_toast_no_wallpapers">没有可用的壁纸</string>
+    <string name="home_current_folder">当前文件夹：%s</string>
+    <string name="home_no_folder_selected">未选择文件夹</string>
+    <string name="home_image_count">图片数量：%d</string>
+    <string name="toast_permission_required">需要存储权限才能访问图片</string>
+    
+    <!-- 图库 -->
+    <string name="gallery_title">壁纸图库</string>
+    <string name="gallery_loading">正在加载壁纸…</string>
+    <string name="gallery_empty">没有壁纸\n请在主页选择壁纸文件夹</string>
+    
+    <!-- 设置 -->
+    <string name="settings_title">设置</string>
+    <string name="settings_wallpaper_section">壁纸设置</string>
+    <string name="settings_switch_method">切换方式</string>
+    <string name="settings_switch_method_auto">自动切换</string>
+    <string name="settings_switch_method_manual">手动切换</string>
+    <string name="settings_switch_order">切换顺序</string>
+    <string name="settings_switch_order_random">随机切换</string>
+    <string name="settings_switch_order_sequential">顺序切换</string>
+    <string name="settings_avoid_repeat">避免重复</string>
+    <string name="settings_avoid_repeat_desc">在随机模式下避免连续使用同一张壁纸</string>
+    <string name="settings_interval">切换间隔</string>
+    <string name="settings_interval_value">间隔值</string>
+    <string name="settings_interval_unit">间隔单位</string>
+    <string name="settings_interval_unit_minute">分钟</string>
+    <string name="settings_interval_unit_hour">小时</string>
+    <string name="settings_interval_unit_day">天</string>
+    <string name="settings_display_section">显示设置</string>
+    <string name="settings_set_lock_screen">同时设置锁屏壁纸</string>
+    <string name="settings_set_lock_screen_desc">切换壁纸时同时设置锁屏壁纸</string>
+    <string name="settings_show_toast">显示切换通知</string>
+    <string name="settings_show_toast_desc">切换壁纸时显示通知</string>
+    <string name="settings_crop_method">裁剪方式</string>
+    <string name="settings_crop_method_center">居中裁剪</string>
+    <string name="settings_crop_method_top">顶部裁剪</string>
+    <string name="settings_crop_method_bottom">底部裁剪</string>
+    <string name="settings_advanced_section">高级设置</string>
+    <string name="settings_enable_logging">启用日志记录</string>
+    <string name="settings_enable_logging_desc">记录应用操作日志（存储在：/Android/data/com.chiya.wallswitcher/files/logs/）</string>
+    <string name="settings_clear_logs">清除日志</string>
+    <string name="settings_clear_logs_desc">删除所有日志文件</string>
+    <string name="settings_toast_logs_cleared">日志已清除</string>
+    <string name="settings_interval_invalid">请输入有效的间隔值</string>
+    <string name="settings_share_logs">分享日志</string>
+    <string name="settings_share_logs_desc">将日志文件分享给开发者以帮助解决问题</string>
+    
+    <!-- 小部件 -->
+    <string name="widget_description">壁纸切换小部件</string>
+    <string name="widget_switch">切换壁纸</string>
+    
+    <!-- 通知 -->
+    <string name="notification_channel_name">壁纸切换服务</string>
+    <string name="notification_channel_description">显示壁纸切换服务的通知</string>
+    <string name="notification_title">壁纸切换服务</string>
+    <string name="notification_text">服务正在运行</string>
+    <string name="toast_wallpaper_changed">壁纸已更改</string>
+    <string name="notification_channel_wallpaper_change">壁纸切换</string>
+    <string name="notification_title_wallpaper_success">壁纸切换成功</string>
+    <string name="notification_title_wallpaper_failed">壁纸切换失败</string>
+    <string name="notification_content_wallpaper_success">已设置壁纸: %s</string>
+    <string name="notification_content_wallpaper_failed">无法设置壁纸: %s</string>
+</resources>
