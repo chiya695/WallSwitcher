@@ -3,6 +3,7 @@ package com.chiya.wallswitcher.ui.viewmodel
 import android.app.Application
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +14,7 @@ import com.chiya.wallswitcher.service.WallpaperSwitchService
 import com.chiya.wallswitcher.util.FileUtils
 import com.chiya.wallswitcher.util.LogUtils
 import com.chiya.wallswitcher.util.WallpaperUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -254,14 +257,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val success = LogUtils.clearLogs()
-                if (success) {
-                    LogUtils.log("清除日志成功")
+                // 添加Toast通知
+                val message = if (success) {
+                    "日志清除成功"
                 } else {
-                    LogUtils.log("清除日志失败")
+                    "日志清除失败"
                 }
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show()
+                }
+                LogUtils.log("清除日志${if (success) "成功" else "失败"}")
             } catch (e: Exception) {
                 LogUtils.log("清除日志时出错: ${e.message}")
                 e.printStackTrace()
+                // 添加错误Toast通知
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(getApplication(), "清除日志时出错", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

@@ -77,13 +77,15 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 else 
                     stringResource(id = R.string.settings_switch_method_manual)
             ) {
-                SwitchModeSelector(
-                    selectedMode = settings.switchMode,
-                    onModeSelected = { 
-                        settings = settings.copy(switchMode = it)
-                        viewModel.updateSettings(settings)
-                    }
-                )
+                Box(modifier = Modifier.width(180.dp)) {
+                    SwitchModeSelector(
+                        selectedMode = settings.switchMode,
+                        onModeSelected = { 
+                            settings = settings.copy(switchMode = it)
+                            viewModel.updateSettings(settings)
+                        }
+                    )
+                }
             }
             
             // 切换顺序
@@ -94,13 +96,15 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 else 
                     stringResource(id = R.string.settings_switch_order_sequential)
             ) {
-                SwitchOrderSelector(
-                    selectedOrder = settings.switchOrder,
-                    onOrderSelected = { 
-                        settings = settings.copy(switchOrder = it)
-                        viewModel.updateSettings(settings)
-                    }
-                )
+                Box(modifier = Modifier.width(180.dp)) {
+                    SwitchOrderSelector(
+                        selectedOrder = settings.switchOrder,
+                        onOrderSelected = { 
+                            settings = settings.copy(switchOrder = it)
+                            viewModel.updateSettings(settings)
+                        }
+                    )
+                }
             }
             
             // 避免重复
@@ -192,13 +196,15 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     else -> stringResource(id = R.string.settings_crop_method_bottom)
                 }
             ) {
-                CropMethodSelector(
-                    selectedMethod = settings.cropMethod,
-                    onMethodSelected = { 
-                        settings = settings.copy(cropMethod = it)
-                        viewModel.updateSettings(settings)
-                    }
-                )
+                Box(modifier = Modifier.width(180.dp)) {
+                    CropMethodSelector(
+                        selectedMethod = settings.cropMethod,
+                        onMethodSelected = { 
+                            settings = settings.copy(cropMethod = it)
+                            viewModel.updateSettings(settings)
+                        }
+                    )
+                }
             }
         }
         

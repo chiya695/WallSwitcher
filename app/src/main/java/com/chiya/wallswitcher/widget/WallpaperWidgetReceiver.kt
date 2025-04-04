@@ -1,11 +1,18 @@
 package com.chiya.wallswitcher.widget
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.widget.RemoteViews
+import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import com.chiya.wallswitcher.R
 import com.chiya.wallswitcher.WallSwitcherApp
 import com.chiya.wallswitcher.data.model.Settings
@@ -73,14 +80,22 @@ class WallpaperWidgetReceiver : AppWidgetProvider() {
                         return@launch
                     }
                     
-                    // 设置壁纸
-                    val success = WallpaperUtils.setWallpaper(context, nextWallpaper, settings)
+                    // 设置壁纸，传递false给showNotification参数，避免WallpaperUtils显示通知
+                    val success = WallpaperUtils.setWallpaper(context, nextWallpaper, settings.copy(showToast = false))
                     if (success) {
                         // 更新壁纸使用信息
                         app.wallpaperRepository.updateWallpaperUsage(nextWallpaper)
                         LogUtils.log("小组件: 壁纸切换成功: ${nextWallpaper.name}")
+                        
+                        // 只在设置中启用了通知时显示
+                        if (settings.showToast) {
+                            showNotification(context, "壁纸切换成功", "已设置壁纸: ${nextWallpaper.name}")
+                        }
                     } else {
                         LogUtils.log("小组件: 壁纸切换失败")
+                        
+                        // 失败时总是显示通知
+                        showNotification(context, "壁纸切换失败", "无法设置壁纸")
                     }
                 } catch (e: Exception) {
                     LogUtils.log("小组件: 切换壁纸时出错: ${e.message}")
@@ -110,6 +125,40 @@ class WallpaperWidgetReceiver : AppWidgetProvider() {
         
         // 更新小部件
         appWidgetManager.updateAppWidget(appWidgetId, views)
+    }
+    
+    // 添加显示通知的辅助方法
+    private fun showNotification(context: Context, title: String, message: String) {
+        try {
+            // 创建通知渠道（Android 8.0+需要）
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channelId = "wallpaper_change_channel"
+                val channelName = "壁纸切换"
+                val importance = NotificationManager.IMPORTANCE_DEFAULT
+                val channel = NotificationChannel(channelId, channelName, importance)
+                
+                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.createNotificationChannel(channel)
+                
+                // 创建通知
+                val builder = NotificationCompat.Builder(context, channelId)
+                    .setSmallIcon(R.drawable.ic_notification)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                
+                // 显示通知
+                notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+            } else {
+                // 对于Android 8.0以下的设备，尝试使用Toast
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(context, "$title: $message", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } catch (e: Exception) {
+            LogUtils.log("显示通知失败: ${e.message}")
+        }
     }
     
     companion object {
