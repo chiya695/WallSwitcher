@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import com.chiya.wallswitcher.R
 import com.chiya.wallswitcher.data.model.Settings
 import com.chiya.wallswitcher.ui.viewmodel.MainViewModel
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 
 /**
  * 设置界面
@@ -209,6 +213,9 @@ fun SettingsScreen(viewModel: MainViewModel) {
         }
         
         Spacer(modifier = Modifier.height(16.dp))
+        
+        // 图片质量设置
+        ImageQualitySettings(viewModel)
         
         // 其他设置
         SettingsSection(title = stringResource(id = R.string.settings_advanced_section)) {
@@ -587,5 +594,118 @@ fun CropMethodSelector(
                 }
             )
         }
+    }
+}
+
+@Composable
+fun ImageQualitySettings(viewModel: MainViewModel) {
+    val settings by viewModel.settings.collectAsState()
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "图片质量设置",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            
+            // 启用图片压缩开关
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "启用图片压缩",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                
+                Switch(
+                    checked = settings.enableImageCompression,
+                    onCheckedChange = { viewModel.updateImageCompression(it) }
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // 图片质量选择器（仅在启用压缩时显示）
+            AnimatedVisibility(visible = settings.enableImageCompression) {
+                Column {
+                    Text(
+                        text = "图片质量",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                    
+                    // 质量选择单选按钮组
+                    Column {
+                        QualityRadioButton(
+                            selected = settings.imageQuality == 0,
+                            onClick = { viewModel.updateImageQuality(0) },
+                            text = "高质量 (占用更多内存)"
+                        )
+                        
+                        QualityRadioButton(
+                            selected = settings.imageQuality == 1,
+                            onClick = { viewModel.updateImageQuality(1) },
+                            text = "平衡 (推荐)"
+                        )
+                        
+                        QualityRadioButton(
+                            selected = settings.imageQuality == 2,
+                            onClick = { viewModel.updateImageQuality(2) },
+                            text = "省内存 (质量较低)"
+                        )
+                    }
+                    
+                    Text(
+                        text = "注意：高质量模式可能导致内存占用增加，在处理大量图片时可能出现卡顿",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+            
+            // 当禁用压缩时显示提示
+            AnimatedVisibility(visible = !settings.enableImageCompression) {
+                Text(
+                    text = "禁用压缩将使用原始图片质量，可能导致内存占用增加和加载速度变慢",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QualityRadioButton(selected: Boolean, onClick: () -> Unit, text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = onClick
+        )
+        
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(start = 8.dp)
+        )
     }
 } 

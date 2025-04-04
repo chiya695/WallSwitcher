@@ -52,6 +52,12 @@ interface WallpaperDao {
     fun getAllWallpapers(): Flow<List<Wallpaper>>
     
     /**
+     * 获取所有壁纸（列表形式）
+     */
+    @Query("SELECT * FROM wallpapers ORDER BY id")
+    suspend fun getAllWallpapersAsList(): List<Wallpaper>
+    
+    /**
      * 获取壁纸数量
      */
     @Query("SELECT COUNT(*) FROM wallpapers")
@@ -98,4 +104,16 @@ interface WallpaperDao {
      */
     @Query("SELECT * FROM wallpapers WHERE path = :path LIMIT 1")
     suspend fun findWallpaperByPath(path: String): Wallpaper?
+    
+    /**
+     * 添加索引以提高查询性能
+     */
+    @Query("SELECT * FROM wallpapers ORDER BY id LIMIT :limit OFFSET :offset")
+    suspend fun getWallpapersPaged(limit: Int, offset: Int): List<Wallpaper>
+    
+    /**
+     * 获取预加载的壁纸
+     */
+    @Query("SELECT * FROM wallpapers ORDER BY id LIMIT :limit")
+    suspend fun getWallpapersForPreload(limit: Int): List<Wallpaper>
 } 

@@ -70,7 +70,7 @@ fun GalleryScreen(viewModel: MainViewModel) {
                     CircularProgressIndicator()
                     Text(
                         text = stringResource(id = R.string.gallery_loading),
-                        modifier = Modifier.padding(top = 16.dp)
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
             }
@@ -86,7 +86,13 @@ fun GalleryScreen(viewModel: MainViewModel) {
                 )
             }
         } else {
-            // 图片网格
+            // 图片网格 - 使用LazyVerticalGrid的懒加载特性
+            Text(
+                text = "共 ${wallpapers.size} 张壁纸",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 120.dp),
                 contentPadding = PaddingValues(4.dp),
@@ -119,11 +125,19 @@ fun WallpaperItem(wallpaper: Wallpaper, onClick: () -> Unit) {
         ImageRequest.Builder(LocalContext.current)
             .data(Uri.parse(wallpaper.path))
             .crossfade(true)
+            // 添加缩略图和缓存策略
+            .size(200)  // 限制加载尺寸
+            .memoryCacheKey(wallpaper.path)
+            .diskCacheKey(wallpaper.path)
             .build()
     } else {
         ImageRequest.Builder(LocalContext.current)
             .data(wallpaper.path)
             .crossfade(true)
+            // 添加缩略图和缓存策略
+            .size(200)  // 限制加载尺寸
+            .memoryCacheKey(wallpaper.path)
+            .diskCacheKey(wallpaper.path)
             .build()
     }
 

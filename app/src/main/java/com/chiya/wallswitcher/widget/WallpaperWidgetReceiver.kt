@@ -25,6 +25,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
+import com.chiya.wallswitcher.worker.WallpaperSwitchWorker
 
 /**
  * 壁纸小部件接收器
@@ -44,64 +48,7 @@ class WallpaperWidgetReceiver : AppWidgetProvider() {
         super.onReceive(context, intent)
         
         if (intent.action == ACTION_SWITCH_WALLPAPER) {
-            LogUtils.log("小组件: 收到切换壁纸请求")
-            
-            // 使用协程在后台线程中执行壁纸切换
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    // 获取应用实例
-                    val app = context.applicationContext as WallSwitcherApp
-                    
-                    // 获取设置
-                    val settings = app.settingsRepository.settingsFlow.first()
-                    
-                    // 检查是否有壁纸
-                    val wallpaperCount = app.wallpaperRepository.getWallpaperCount()
-                    if (wallpaperCount == 0) {
-                        LogUtils.log("小组件: 没有可用的壁纸")
-                        return@launch
-                    }
-                    
-                    // 获取当前壁纸
-                    val lastWallpaper = app.wallpaperRepository.getLastUsedWallpaper()
-                    val currentId = lastWallpaper?.id ?: -1
-                    
-                    // 获取下一张壁纸
-                    val nextWallpaper = if (settings.switchOrder == SwitchOrder.RANDOM.ordinal) {
-                        // 随机切换
-                        app.wallpaperRepository.getRandomWallpaper(settings.avoidRepeat, currentId)
-                    } else {
-                        // 顺序切换
-                        app.wallpaperRepository.getNextWallpaper(currentId)
-                    }
-                    
-                    if (nextWallpaper == null) {
-                        LogUtils.log("小组件: 获取下一张壁纸失败")
-                        return@launch
-                    }
-                    
-                    // 设置壁纸，传递false给showNotification参数，避免WallpaperUtils显示通知
-                    val success = WallpaperUtils.setWallpaper(context, nextWallpaper, settings.copy(showToast = false))
-                    if (success) {
-                        // 更新壁纸使用信息
-                        app.wallpaperRepository.updateWallpaperUsage(nextWallpaper)
-                        LogUtils.log("小组件: 壁纸切换成功: ${nextWallpaper.name}")
-                        
-                        // 只在设置中启用了通知时显示
-                        if (settings.showToast) {
-                            showNotification(context, "壁纸切换成功", "已设置壁纸: ${nextWallpaper.name}")
-                        }
-                    } else {
-                        LogUtils.log("小组件: 壁纸切换失败")
-                        
-                        // 失败时总是显示通知
-                        showNotification(context, "壁纸切换失败", "无法设置壁纸")
-                    }
-                } catch (e: Exception) {
-                    LogUtils.log("小组件: 切换壁纸时出错: ${e.message}")
-                    e.printStackTrace()
-                }
-            }
+            handleSwitchWallpaper(context)
         }
     }
     
@@ -158,6 +105,25 @@ class WallpaperWidgetReceiver : AppWidgetProvider() {
             }
         } catch (e: Exception) {
             LogUtils.log("显示通知失败: ${e.message}")
+        }
+    }
+    
+    /**
+     * 处理壁纸切换请求
+     */
+    private fun handleSwitchWallpaper(context: Context) {
+        LogUtils.log("小组件: 收到切换壁纸请求")
+        
+        // 使用WorkManager代替直接在BroadcastReceiver中执行耗时操作
+        val switchWallpaperWork = OneTimeWorkRequestBuilder<WallpaperSwitchWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build()
+        
+        WorkManager.getInstance(context).enqueue(switchWallpaperWork)
+        
+        // 显示正在切换的提示
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(context, "正在切换壁纸...", Toast.LENGTH_SHORT).show()
         }
     }
     

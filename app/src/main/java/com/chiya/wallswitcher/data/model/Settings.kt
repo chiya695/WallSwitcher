@@ -32,7 +32,15 @@ data class Settings(
     val cropMethod: Int = 0,
     
     // 是否启用日志记录
-    val enableLogging: Boolean = false
+    val enableLogging: Boolean = false,
+    
+    // 新增分页加载设置
+    val pageSize: Int = 100,  // 每页加载的图片数量
+    val preloadThreshold: Int = 20,  // 预加载阈值
+    
+    // 新增图片质量设置
+    val enableImageCompression: Boolean = true,  // 默认启用压缩
+    val imageQuality: Int = 1  // 0=高质量, 1=平衡, 2=省内存
 )
 
 /**

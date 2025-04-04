@@ -221,4 +221,91 @@ class WallpaperRepository(private val wallpaperDao: WallpaperDao) {
             return@withContext 0
         }
     }
+
+    /**
+     * 分页加载壁纸
+     */
+    suspend fun loadWallpapersFromUriPaged(context: Context, uri: Uri, pageSize: Int = 100): Int = withContext(Dispatchers.IO) {
+        try {
+            LogUtils.log("开始从DocumentUri分页加载壁纸: $uri")
+            
+            // 清空现有壁纸
+            wallpaperDao.deleteAll()
+            LogUtils.log("已清空现有壁纸")
+            
+            val documentFile = DocumentFile.fromTreeUri(context, uri)
+            LogUtils.log("DocumentFile获取结果: ${documentFile != null}")
+            
+            if (documentFile == null || !documentFile.exists() || !documentFile.isDirectory) {
+                LogUtils.log("无效的DocumentUri: $uri, 存在: ${documentFile?.exists()}, 是目录: ${documentFile?.isDirectory}")
+                return@withContext 0
+            }
+            
+            val files = documentFile.listFiles()
+            LogUtils.log("文件夹中的文件数量: ${files.size}")
+            
+            // 只获取图片文件
+            val imageFiles = files.filter { file -> 
+                file.isFile && file.type?.startsWith("image/") == true 
+            }
+            
+            // 分批处理图片文件
+            val totalImages = imageFiles.size
+            var processedCount = 0
+            
+            imageFiles.chunked(pageSize).forEach { batch ->
+                val wallpapers = batch.map { file ->
+                    val name = file.name ?: "Unknown"
+                    val path = file.uri.toString()
+                    Wallpaper(
+                        id = 0,
+                        path = path,
+                        name = name,
+                        lastUsed = 0
+                    )
+                }
+                
+                // 批量插入壁纸
+                wallpaperDao.insertAll(wallpapers)
+                
+                processedCount += batch.size
+                LogUtils.log("已处理 $processedCount/$totalImages 张图片")
+            }
+            
+            LogUtils.log("分页加载壁纸完成，共加载 $processedCount 张图片")
+            return@withContext processedCount
+        } catch (e: Exception) {
+            LogUtils.log("分页加载壁纸时出错: ${e.message}")
+            e.printStackTrace()
+            return@withContext 0
+        }
+    }
+
+    /**
+     * 获取预加载的壁纸
+     */
+    suspend fun getWallpapersForPreload(limit: Int): List<Wallpaper> {
+        return wallpaperDao.getWallpapersForPreload(limit)
+    }
+
+    /**
+     * 获取所有壁纸
+     */
+    suspend fun getWallpapers(): List<Wallpaper> {
+        return wallpaperDao.getAllWallpapersAsList()
+    }
+
+    /**
+     * 获取下一张顺序壁纸
+     */
+    suspend fun getNextSequentialWallpaper(currentId: Long): Wallpaper? {
+        return wallpaperDao.getNextWallpaper(currentId)
+    }
+
+    /**
+     * 获取第一张壁纸
+     */
+    suspend fun getFirstWallpaper(): Wallpaper? {
+        return wallpaperDao.getFirstWallpaper()
+    }
 } 

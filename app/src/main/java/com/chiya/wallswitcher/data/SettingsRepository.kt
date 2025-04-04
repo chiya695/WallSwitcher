@@ -36,6 +36,10 @@ class SettingsRepository(private val context: Context) {
         val SHOW_TOAST = booleanPreferencesKey("show_toast")
         val CROP_METHOD = intPreferencesKey("crop_method")
         val ENABLE_LOGGING = booleanPreferencesKey("enable_logging")
+        val PAGE_SIZE = intPreferencesKey("page_size")
+        val PRELOAD_THRESHOLD = intPreferencesKey("preload_threshold")
+        val ENABLE_IMAGE_COMPRESSION = booleanPreferencesKey("enable_image_compression")
+        val IMAGE_QUALITY = intPreferencesKey("image_quality")
     }
     
     /**
@@ -52,7 +56,11 @@ class SettingsRepository(private val context: Context) {
             setLockScreen = preferences[PreferencesKeys.SET_LOCK_SCREEN] ?: false,
             showToast = preferences[PreferencesKeys.SHOW_TOAST] ?: true,
             cropMethod = preferences[PreferencesKeys.CROP_METHOD] ?: 0,
-            enableLogging = preferences[PreferencesKeys.ENABLE_LOGGING] ?: false
+            enableLogging = preferences[PreferencesKeys.ENABLE_LOGGING] ?: false,
+            pageSize = preferences[PreferencesKeys.PAGE_SIZE] ?: 100,
+            preloadThreshold = preferences[PreferencesKeys.PRELOAD_THRESHOLD] ?: 20,
+            enableImageCompression = preferences[PreferencesKeys.ENABLE_IMAGE_COMPRESSION] ?: true,
+            imageQuality = preferences[PreferencesKeys.IMAGE_QUALITY] ?: 1
         )
     }
     
@@ -161,6 +169,28 @@ class SettingsRepository(private val context: Context) {
             preferences[PreferencesKeys.SHOW_TOAST] = settings.showToast
             preferences[PreferencesKeys.CROP_METHOD] = settings.cropMethod
             preferences[PreferencesKeys.ENABLE_LOGGING] = settings.enableLogging
+            preferences[PreferencesKeys.PAGE_SIZE] = settings.pageSize
+            preferences[PreferencesKeys.PRELOAD_THRESHOLD] = settings.preloadThreshold
+            preferences[PreferencesKeys.ENABLE_IMAGE_COMPRESSION] = settings.enableImageCompression
+            preferences[PreferencesKeys.IMAGE_QUALITY] = settings.imageQuality
+        }
+    }
+
+    /**
+     * 更新图片压缩
+     */
+    suspend fun updateImageCompression(enableCompression: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ENABLE_IMAGE_COMPRESSION] = enableCompression
+        }
+    }
+
+    /**
+     * 更新图片质量
+     */
+    suspend fun updateImageQuality(quality: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IMAGE_QUALITY] = quality
         }
     }
 } 

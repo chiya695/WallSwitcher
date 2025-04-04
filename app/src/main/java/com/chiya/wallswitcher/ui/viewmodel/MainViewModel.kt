@@ -12,6 +12,7 @@ import com.chiya.wallswitcher.data.model.Settings
 import com.chiya.wallswitcher.data.model.Wallpaper
 import com.chiya.wallswitcher.service.WallpaperSwitchService
 import com.chiya.wallswitcher.util.FileUtils
+import com.chiya.wallswitcher.util.ImagePreloader
 import com.chiya.wallswitcher.util.LogUtils
 import com.chiya.wallswitcher.util.WallpaperUtils
 import kotlinx.coroutines.Dispatchers
@@ -325,6 +326,85 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 LogUtils.log("分享日志文件: ${latestLogFile.name}")
             } catch (e: Exception) {
                 LogUtils.log("分享日志文件失败: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    }
+    
+    /**
+     * 加载壁纸文件夹
+     */
+    fun loadWallpaperFolder(uri: Uri) {
+        viewModelScope.launch {
+            try {
+                _loading.value = true
+                
+                // 保存文件夹路径
+                val context = getApplication<Application>()
+                val path = uri.toString()
+                val currentSettings = settings.value
+                val updatedSettings = currentSettings.copy(folderPath = path)
+                app.settingsRepository.updateSettings(updatedSettings)
+                
+                // 使用分页加载壁纸
+                val count = app.wallpaperRepository.loadWallpapersFromUriPaged(
+                    context, 
+                    uri,
+                    updatedSettings.pageSize
+                )
+                
+                // 预加载前100张图片的缩略图
+                viewModelScope.launch(Dispatchers.IO) {
+                    val preloadWallpapers = app.wallpaperRepository.getWallpapersForPreload(100)
+                    ImagePreloader.preloadThumbnails(context, preloadWallpapers, viewModelScope)
+                }
+                
+                LogUtils.log("加载壁纸文件夹成功，共加载 $count 张壁纸")
+                
+                // 显示Toast消息
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        "已加载 $count 张壁纸",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                LogUtils.log("加载壁纸文件夹时出错: ${e.message}")
+                e.printStackTrace()
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+    
+    /**
+     * 更新图片压缩设置
+     */
+    fun updateImageCompression(enableCompression: Boolean) {
+        viewModelScope.launch {
+            try {
+                val app = getApplication<WallSwitcherApp>()
+                app.settingsRepository.updateImageCompression(enableCompression)
+                LogUtils.log("更新图片压缩设置: $enableCompression")
+            } catch (e: Exception) {
+                LogUtils.log("更新图片压缩设置时出错: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    }
+    
+    /**
+     * 更新图片质量设置
+     */
+    fun updateImageQuality(quality: Int) {
+        viewModelScope.launch {
+            try {
+                val app = getApplication<WallSwitcherApp>()
+                app.settingsRepository.updateImageQuality(quality)
+                LogUtils.log("更新图片质量设置: $quality")
+            } catch (e: Exception) {
+                LogUtils.log("更新图片质量设置时出错: ${e.message}")
                 e.printStackTrace()
             }
         }

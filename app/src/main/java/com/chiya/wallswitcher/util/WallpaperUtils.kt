@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import android.util.LruCache
 
 /**
  * 壁纸工具类
@@ -372,16 +373,23 @@ object WallpaperUtils {
     /**
      * 使用位图设置壁纸
      */
-    private fun setWallpaperWithBitmap(context: Context, bitmap: Bitmap, wallpaperName: String, settings: Settings): Boolean {
+    fun setWallpaperWithBitmap(context: Context, bitmap: Bitmap, wallpaperName: String, settings: Settings): Boolean {
         try {
-            // 获取壁纸管理器
+            LogUtils.log("使用位图设置壁纸: $wallpaperName")
+            
             val wallpaperManager = WallpaperManager.getInstance(context)
             
-            // 设置壁纸
-            if (settings.setLockScreen && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                // 同时设置主屏幕和锁屏壁纸
-                wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
-                LogUtils.log("已设置主屏幕和锁屏壁纸: $wallpaperName")
+            // 根据设置决定是否同时设置锁屏壁纸
+            if (settings.setLockScreen) {
+                // 设置主屏幕和锁屏壁纸
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
+                    LogUtils.log("已设置主屏幕和锁屏壁纸: $wallpaperName")
+                } else {
+                    // 旧版本Android只能设置主屏幕壁纸
+                    wallpaperManager.setBitmap(bitmap)
+                    LogUtils.log("已设置主屏幕壁纸: $wallpaperName (旧版本Android不支持单独设置锁屏壁纸)")
+                }
             } else {
                 // 仅设置主屏幕壁纸
                 wallpaperManager.setBitmap(bitmap)
@@ -390,9 +398,148 @@ object WallpaperUtils {
             
             return true
         } catch (e: Exception) {
-            LogUtils.log("设置壁纸时出错: ${e.message}")
+            LogUtils.log("使用位图设置壁纸时出错: ${e.message}")
             e.printStackTrace()
             return false
         }
+    }
+
+    /**
+     * 根据设置加载壁纸位图
+     */
+    suspend fun loadWallpaperBitmap(context: Context, path: String, settings: Settings): Bitmap? = withContext(Dispatchers.IO) {
+        try {
+            // 如果禁用压缩，直接加载原图
+            if (!settings.enableImageCompression) {
+                LogUtils.log("加载原始壁纸: $path")
+                return@withContext loadOriginalBitmap(context, path)
+            }
+            
+            // 根据质量设置选择不同的参数
+            val (maxWidth, maxHeight, config) = when (settings.imageQuality) {
+                0 -> Triple(2560, 1440, Bitmap.Config.ARGB_8888) // 高质量
+                2 -> Triple(1280, 720, Bitmap.Config.RGB_565)    // 省内存
+                else -> Triple(1920, 1080, Bitmap.Config.RGB_565) // 平衡(默认)
+            }
+            
+            // 使用优化参数加载图片
+            return@withContext loadOptimizedBitmap(context, path, maxWidth, maxHeight, config)
+        } catch (e: Exception) {
+            LogUtils.log("加载壁纸位图时出错: ${e.message}")
+            e.printStackTrace()
+            return@withContext null
+        }
+    }
+
+    /**
+     * 加载原始位图，不进行压缩
+     */
+    private suspend fun loadOriginalBitmap(context: Context, path: String): Bitmap? = withContext(Dispatchers.IO) {
+        try {
+            LogUtils.log("加载原始壁纸: $path")
+            
+            if (path.startsWith("content://")) {
+                context.contentResolver.openInputStream(Uri.parse(path))?.use { inputStream ->
+                    return@withContext BitmapFactory.decodeStream(inputStream)
+                }
+            } else {
+                return@withContext BitmapFactory.decodeFile(path)
+            }
+            
+            return@withContext null
+        } catch (e: Exception) {
+            LogUtils.log("加载原始壁纸时出错: ${e.message}")
+            e.printStackTrace()
+            return@withContext null
+        }
+    }
+
+    /**
+     * 加载优化后的位图
+     */
+    suspend fun loadOptimizedBitmap(
+        context: Context, 
+        path: String, 
+        maxWidth: Int, 
+        maxHeight: Int,
+        bitmapConfig: Bitmap.Config = Bitmap.Config.RGB_565
+    ): Bitmap? = withContext(Dispatchers.IO) {
+        try {
+            // 检查缓存
+            val cacheKey = "$path-$maxWidth-$maxHeight-$bitmapConfig"
+            val cachedBitmap = getBitmapFromCache(cacheKey)
+            if (cachedBitmap != null) {
+                LogUtils.log("从缓存加载壁纸: $path")
+                return@withContext cachedBitmap
+            }
+            
+            LogUtils.log("开始加载优化壁纸: $path")
+            
+            // 先获取图片尺寸
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            
+            if (path.startsWith("content://")) {
+                context.contentResolver.openInputStream(Uri.parse(path))?.use { inputStream ->
+                    BitmapFactory.decodeStream(inputStream, null, options)
+                }
+            } else {
+                BitmapFactory.decodeFile(path, options)
+            }
+            
+            // 计算采样率
+            val width = options.outWidth
+            val height = options.outHeight
+            var inSampleSize = 1
+            
+            if (width > maxWidth || height > maxHeight) {
+                val widthRatio = Math.round(width.toFloat() / maxWidth)
+                val heightRatio = Math.round(height.toFloat() / maxHeight)
+                inSampleSize = Math.max(widthRatio, heightRatio)
+            }
+            
+            LogUtils.log("图片原始尺寸: ${width}x${height}, 采样率: $inSampleSize")
+            
+            // 加载压缩后的图片
+            options.apply {
+                inJustDecodeBounds = false
+                inSampleSize = inSampleSize
+                inPreferredConfig = bitmapConfig
+            }
+            
+            val bitmap = if (path.startsWith("content://")) {
+                context.contentResolver.openInputStream(Uri.parse(path))?.use { inputStream ->
+                    BitmapFactory.decodeStream(inputStream, null, options)
+                }
+            } else {
+                BitmapFactory.decodeFile(path, options)
+            }
+            
+            // 缓存位图
+            if (bitmap != null) {
+                addBitmapToCache(cacheKey, bitmap)
+                LogUtils.log("加载优化壁纸成功: ${bitmap.width}x${bitmap.height}")
+            } else {
+                LogUtils.log("加载优化壁纸失败")
+            }
+            
+            return@withContext bitmap
+        } catch (e: Exception) {
+            LogUtils.log("加载优化壁纸时出错: ${e.message}")
+            e.printStackTrace()
+            return@withContext null
+        }
+    }
+
+    // 简单的内存缓存
+    private val bitmapCache = LruCache<String, Bitmap>(10 * 1024 * 1024) // 10MB缓存
+
+    private fun getBitmapFromCache(key: String): Bitmap? {
+        return bitmapCache.get(key)
+    }
+
+    private fun addBitmapToCache(key: String, bitmap: Bitmap) {
+        bitmapCache.put(key, bitmap)
     }
 } 
