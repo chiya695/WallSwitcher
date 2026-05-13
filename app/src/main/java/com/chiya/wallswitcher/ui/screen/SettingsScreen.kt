@@ -125,36 +125,49 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
             
-            // 切换间隔
-            SettingItem(
-                title = stringResource(id = R.string.settings_interval),
-                description = ""
+            // 切换间隔（标题在上，输入框在下占满宽度）
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
             ) {
+                Text(
+                    text = stringResource(id = R.string.settings_interval),
+                    style = MaterialTheme.typography.titleSmall
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 间隔值
                     IntervalValueInput(
                         value = settings.intervalValue,
-                        onValueChange = { 
+                        onValueChange = {
                             settings = settings.copy(intervalValue = it)
                             viewModel.updateSettings(settings)
                         },
                         modifier = Modifier.weight(1f)
                     )
-                    
+
                     Spacer(modifier = Modifier.width(8.dp))
-                    
+
                     // 间隔单位
                     IntervalUnitSelector(
                         selectedUnit = settings.intervalUnit,
-                        onUnitSelected = { 
+                        onUnitSelected = {
                             settings = settings.copy(intervalUnit = it)
                             viewModel.updateSettings(settings)
                         },
                         modifier = Modifier.weight(1f)
                     )
                 }
+
+                Divider(
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
         }
         
@@ -312,7 +325,9 @@ fun SettingItem(
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 
                 if (description.isNotEmpty()) {
