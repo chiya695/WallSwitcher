@@ -40,18 +40,17 @@ class WallSwitcherApp : Application(), Configuration.Provider {
         createNotificationChannel()
         
         // 注意：不再手动调用 WorkManager.initialize()。
-        // 使用 Configuration.Provider 接口（getWorkManagerConfiguration）提供自定义配置，
+        // 使用 Configuration.Provider 接口提供自定义配置，
         // Manifest 中已移除默认初始化器（tools:node="remove"），避免双重初始化冲突。
         
         // 初始化日志设置
         initLogging()
     }
     
-    override fun getWorkManagerConfiguration(): Configuration {
-        return Configuration.Builder()
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
             .setMinimumLoggingLevel(android.util.Log.INFO)
             .build()
-    }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -245,16 +245,16 @@ class WallpaperRepository(private val wallpaperDao: WallpaperDao) {
             LogUtils.log("文件夹中的文件数量: ${files.size}")
             
             // 只获取图片文件
-            val imageFiles = files.filter { file -> 
-                file.isFile && file.type?.startsWith("image/") == true 
+            val imageFiles = files.filter { file: DocumentFile ->
+                file.isFile && file.type?.startsWith("image/") == true
             }
             
             // 分批处理图片文件
             val totalImages = imageFiles.size
             var processedCount = 0
             
-            imageFiles.chunked(pageSize).forEach { batch ->
-                val wallpapers = batch.map { file ->
+            imageFiles.chunked(pageSize).forEach { batch: List<DocumentFile> ->
+                val wallpapers = batch.map { file: DocumentFile ->
                     val name = file.name ?: "Unknown"
                     val path = file.uri.toString()
                     Wallpaper(

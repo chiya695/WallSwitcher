@@ -1,3 +1,5 @@
+package com.chiya.wallswitcher.data.model
+
 enum class CropMethod {
     NONE,   // 不裁剪
     CENTER, // 居中裁剪
