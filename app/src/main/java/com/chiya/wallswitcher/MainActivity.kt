@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,6 +33,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // 启用 Edge-to-Edge 显示（Android 16 强制要求）
+        enableEdgeToEdge()
         
         // 检查权限
         checkPermissions()

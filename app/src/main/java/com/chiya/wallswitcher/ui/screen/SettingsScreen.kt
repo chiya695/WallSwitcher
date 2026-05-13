@@ -612,7 +612,7 @@ fun ImageQualitySettings(viewModel: MainViewModel) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "图片质量设置",
+                text = stringResource(id = R.string.settings_image_quality_title),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -624,7 +624,7 @@ fun ImageQualitySettings(viewModel: MainViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "启用图片压缩",
+                    text = stringResource(id = R.string.settings_enable_image_compression),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 
@@ -640,7 +640,7 @@ fun ImageQualitySettings(viewModel: MainViewModel) {
             AnimatedVisibility(visible = settings.enableImageCompression) {
                 Column {
                     Text(
-                        text = "图片质量",
+                        text = stringResource(id = R.string.settings_image_quality),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
@@ -650,24 +650,24 @@ fun ImageQualitySettings(viewModel: MainViewModel) {
                         QualityRadioButton(
                             selected = settings.imageQuality == 0,
                             onClick = { viewModel.updateImageQuality(0) },
-                            text = "高质量 (占用更多内存)"
+                            text = stringResource(id = R.string.settings_image_quality_high)
                         )
                         
                         QualityRadioButton(
                             selected = settings.imageQuality == 1,
                             onClick = { viewModel.updateImageQuality(1) },
-                            text = "平衡 (推荐)"
+                            text = stringResource(id = R.string.settings_image_quality_balanced)
                         )
                         
                         QualityRadioButton(
                             selected = settings.imageQuality == 2,
                             onClick = { viewModel.updateImageQuality(2) },
-                            text = "省内存 (质量较低)"
+                            text = stringResource(id = R.string.settings_image_quality_low)
                         )
                     }
                     
                     Text(
-                        text = "注意：高质量模式可能导致内存占用增加，在处理大量图片时可能出现卡顿",
+                        text = stringResource(id = R.string.settings_image_quality_high_warning),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(top = 8.dp)
@@ -678,7 +678,7 @@ fun ImageQualitySettings(viewModel: MainViewModel) {
             // 当禁用压缩时显示提示
             AnimatedVisibility(visible = !settings.enableImageCompression) {
                 Text(
-                    text = "禁用压缩将使用原始图片质量，可能导致内存占用增加和加载速度变慢",
+                    text = stringResource(id = R.string.settings_image_compression_disabled_warning),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(top = 8.dp)

@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- 前台服务权限 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 写入外部存储权限（用于日志） -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -43,7 +44,12 @@
         <service
             android:name=".service.WallpaperSwitchService"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="wallpaper_switching_service" />
+        </service>
             
         <!-- 开机启动接收器 -->
         <receiver

@@ -28,7 +28,7 @@ data class Settings(
     // 是否显示切换通知
     val showToast: Boolean = true,
     
-    // 裁剪方式：0-居中裁剪，1-顶部裁剪，2-底部裁剪
+    // 裁剪方式：0=不裁剪(NONE), 1=居中裁剪(CENTER), 2=顶部裁剪(TOP), 3=底部裁剪(BOTTOM)
     val cropMethod: Int = 0,
     
     // 是否启用日志记录
@@ -66,13 +66,4 @@ enum class SwitchMode {
 enum class SwitchOrder {
     RANDOM,
     SEQUENTIAL
-}
-
-/**
- * 裁剪方式枚举
- */
-enum class CropMethod {
-    CENTER,
-    TOP,
-    BOTTOM
 } 

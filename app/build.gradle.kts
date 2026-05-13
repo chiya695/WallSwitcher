@@ -7,14 +7,14 @@ plugins {
 
 android {
     namespace = "com.chiya.wallswitcher"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.chiya.wallswitcher"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = 2
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -33,7 +33,6 @@ import coil.request.ImageRequest
 import com.chiya.wallswitcher.R
 import com.chiya.wallswitcher.data.model.Wallpaper
 import com.chiya.wallswitcher.ui.viewmodel.MainViewModel
-import com.chiya.wallswitcher.util.LogUtils
 import java.io.File
 import androidx.compose.ui.draw.clip
 
@@ -88,7 +87,7 @@ fun GalleryScreen(viewModel: MainViewModel) {
         } else {
             // 图片网格 - 使用LazyVerticalGrid的懒加载特性
             Text(
-                text = "共 ${wallpapers.size} 张壁纸",
+                text = stringResource(id = R.string.gallery_wallpaper_count, wallpapers.size),
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -116,9 +115,6 @@ fun GalleryScreen(viewModel: MainViewModel) {
 @Composable
 fun WallpaperItem(wallpaper: Wallpaper, onClick: () -> Unit) {
     val context = LocalContext.current
-    
-    // 添加日志以便调试
-    LogUtils.log("加载图片: ${wallpaper.path}")
 
     // 根据路径类型构建不同的请求
     val imageRequest = if (wallpaper.path.startsWith("content://")) {

@@ -1,6 +1,8 @@
 package com.chiya.wallswitcher.ui.viewmodel
 
+import android.app.ActivityManager
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -68,8 +70,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * 检查服务是否正在运行
      */
     private fun checkServiceRunning() {
-        // 这里简单实现，实际应用中可能需要更复杂的检查
-        _serviceRunning.value = false
+        try {
+            val context = getApplication<Application>()
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val runningServices = activityManager.getRunningServices(Int.MAX_VALUE)
+            val isRunning = runningServices.any { 
+                it.service.className == WallpaperSwitchService::class.java.name 
+            }
+            _serviceRunning.value = isRunning
+        } catch (e: Exception) {
+            LogUtils.log("检查服务运行状态时出错: ${e.message}")
+            _serviceRunning.value = false
+        }
     }
     
     /**

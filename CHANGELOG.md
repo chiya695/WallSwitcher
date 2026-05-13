@@ -1,5 +1,33 @@
 # 壁纸切换器更新日志
 
+## 版本 1.3.0 (2026-05-13)
+
+### Android 16 (API 36) 适配
+
+- **构建配置升级**：compileSdk 和 targetSdk 升级至 36，版本号更新
+- **Edge-to-Edge 适配**：添加 `enableEdgeToEdge()` 调用，确保应用在 Android 16 上正确显示
+- **前台服务类型声明**：为 WallpaperSwitchService 声明 `foregroundServiceType="specialUse"`，添加 `FOREGROUND_SERVICE_SPECIAL_USE` 权限
+- **预测性返回手势**：升级 Navigation Compose 至 2.9.0，内置支持预测性返回
+
+### 依赖库升级
+
+- Compose BOM: 2024.09.00 → 2025.05.00
+- Navigation Compose: 2.7.7 → 2.9.0
+- WorkManager: 2.9.0 → 2.10.0
+- Coil: 2.5.0 → 2.7.0
+- Accompanist Permissions: 0.32.0 → 0.37.0
+- AndroidX Core KTX: 1.15.0 → 1.16.0
+- Lifecycle Runtime KTX: 2.8.7 → 2.9.0
+
+### Bug 修复
+
+- 修复 CropMethod 枚举重复定义问题，统一使用 CropMethod.kt 中的定义
+- 修复 GalleryScreen 中 LogUtils 在 Composable 重组时被反复调用导致日志泛滥
+- 修复 WorkManager 双重初始化问题，移除手动 initialize() 调用
+- 修复 WallpaperUtils 中裁剪后原始位图未回收导致内存泄露
+- 修复 MainViewModel 中服务运行状态检测硬编码为 false 的问题
+- 修复 SettingsScreen 和 GalleryScreen 中硬编码中文字符串问题
+
 ## 版本 1.2.1 (2025-04-04)
 
 ### 新增功能

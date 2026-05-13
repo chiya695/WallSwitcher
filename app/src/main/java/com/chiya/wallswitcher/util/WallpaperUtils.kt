@@ -120,7 +120,10 @@ object WallpaperUtils {
                     return result
                 }
                 
-                cropBitmap(originalBitmap, screenSize, cropMethod)
+                // 裁剪后回收原始位图
+                val croppedBitmap = cropBitmap(originalBitmap, screenSize, cropMethod)
+                originalBitmap.recycle()
+                croppedBitmap
             } else {
                 // 检查文件是否存在
                 val file = File(wallpaper.path)
@@ -157,7 +160,10 @@ object WallpaperUtils {
                     return result
                 }
                 
-                cropBitmap(originalBitmap, screenSize, cropMethod)
+                // 裁剪后回收原始位图
+                val croppedBitmap = cropBitmap(originalBitmap, screenSize, cropMethod)
+                originalBitmap.recycle()
+                croppedBitmap
             }
             
             if (bitmap == null) {

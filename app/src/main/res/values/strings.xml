@@ -89,4 +89,17 @@
     <string name="notification_title_wallpaper_failed">壁纸切换失败</string>
     <string name="notification_content_wallpaper_success">已设置壁纸: %s</string>
     <string name="notification_content_wallpaper_failed">无法设置壁纸: %s</string>
+
+    <!-- 图片质量设置 -->
+    <string name="settings_image_quality_title">图片质量设置</string>
+    <string name="settings_enable_image_compression">启用图片压缩</string>
+    <string name="settings_image_quality">图片质量</string>
+    <string name="settings_image_quality_high">高质量 (占用更多内存)</string>
+    <string name="settings_image_quality_balanced">平衡 (推荐)</string>
+    <string name="settings_image_quality_low">省内存 (质量较低)</string>
+    <string name="settings_image_quality_high_warning">注意：高质量模式可能导致内存占用增加，在处理大量图片时可能出现卡顿</string>
+    <string name="settings_image_compression_disabled_warning">禁用压缩将使用原始图片质量，可能导致内存占用增加和加载速度变慢</string>
+
+    <!-- 图库 -->
+    <string name="gallery_wallpaper_count">共 %d 张壁纸</string>
 </resources>
