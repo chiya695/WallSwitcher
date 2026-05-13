@@ -1,15 +1,17 @@
 # 壁纸切换器更新日志
 
-## 版本 1.3.0 (2026-05-13)
+## v1.3.0 (2026-05-13)
 
-### Android 16 (API 36) 适配
+这次主要是适配 Android 16 (API 36)，顺便修了一些攒了很久的小问题。
 
-- **构建配置升级**：compileSdk 和 targetSdk 升级至 36，版本号更新
-- **Edge-to-Edge 适配**：添加 `enableEdgeToEdge()` 调用，确保应用在 Android 16 上正确显示
-- **前台服务类型声明**：为 WallpaperSwitchService 声明 `foregroundServiceType="specialUse"`，添加 `FOREGROUND_SERVICE_SPECIAL_USE` 权限
-- **预测性返回手势**：升级 Navigation Compose 至 2.9.0，内置支持预测性返回
+### Android 16 适配
 
-### 依赖库升级
+- compileSdk 和 targetSdk 升到 36
+- 加了 `enableEdgeToEdge()`，Android 16 不让退出全屏模式了
+- 给壁纸切换服务声明了 `foregroundServiceType="specialUse"`，加上了对应的权限
+- Navigation Compose 升到 2.9.0，支持预测性返回手势
+
+### 依赖升级
 
 - Compose BOM: 2024.09.00 → 2025.05.00
 - Navigation Compose: 2.7.7 → 2.9.0
@@ -21,14 +23,14 @@
 
 ### Bug 修复
 
-- 修复 CropMethod 枚举重复定义问题，统一使用 CropMethod.kt 中的定义
-- 修复 GalleryScreen 中 LogUtils 在 Composable 重组时被反复调用导致日志泛滥
-- 修复 WorkManager 双重初始化问题，移除手动 initialize() 调用
-- 修复 WallpaperUtils 中裁剪后原始位图未回收导致内存泄露
-- 修复 MainViewModel 中服务运行状态检测硬编码为 false 的问题
-- 修复 SettingsScreen 和 GalleryScreen 中硬编码中文字符串问题
+- CropMethod 枚举在两个文件里各定义了一份，删掉了 Settings.kt 里重复的
+- GalleryScreen 里 LogUtils.log() 在 Composable 重组时被反复调用，日志文件会爆，删掉了
+- WorkManager 同时手动初始化又实现了 Configuration.Provider，冲突了，删掉手动初始化
+- WallpaperUtils 裁剪后原始 Bitmap 没 recycle，内存泄漏，加上了
+- MainViewModel 里 checkServiceRunning() 之前硬编码返回 false，改成了 ActivityManager 查询
+- SettingsScreen 和 GalleryScreen 里的硬编码中文字符串换成了 stringResource
 
-## 版本 1.2.1 (2025-04-04)
+## v1.2.1 (2025-04-04)
 
 ### 新增功能
 
